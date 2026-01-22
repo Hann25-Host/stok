@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HANN 25 - CTRL STOK</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #050505; color: white; padding: 15px; margin: 0; overflow-x: hidden; }
+        .card { background: #111; border: 1px solid #333; padding: 20px; border-radius: 15px; max-width: 500px; margin: 10px auto; }
+        h2 { color: #0ea5e9; font-size: 14px; border-bottom: 1px solid #333; padding-bottom: 10px; margin: 0 0 15px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        label { display: block; font-size: 10px; font-weight: 800; color: #666; margin: 15px 0 5px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 12px; background: #000; border: 1px solid #333; border-radius: 8px; color: white; box-sizing: border-box; outline: none; font-size: 14px; }
+        input:focus { border-color: #0ea5e9; }
+        .btn { width: 100%; padding: 14px; border-radius: 8px; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 10px; font-size: 11px; transition: 0.3s; }
+        .btn-blue { background: #0ea5e9; color: white; }
+        .btn-green { background: #2ecc71; color: white; margin-top: 20px; }
+        .btn-red { background: #e74c3c; color: white; width: auto; padding: 6px 12px; font-size: 9px; }
+        
+        #crop-area { display: none; margin-top: 10px; background: #000; padding: 10px; border-radius: 8px; border: 1px dashed #444; touch-action: none; }
+        .cropper-container { max-height: 350px !important; }
+        
+        .preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .preview-item { position: relative; width: 100%; border-radius: 8px; border: 1px solid #333; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; }
+        .preview-item img { width: 100%; height: auto; display: block; object-fit: contain; }
+        .del-img { position: absolute; top: 5px; right: 5px; background: rgba(231, 76, 60, 0.9); color: white; border: none; border-radius: 5px; padding: 4px 8px; font-size: 10px; font-weight: bold; cursor: pointer; z-index: 10; }
+        
+        .add-photo-btn { background: #1a1a1a; border: 2px dashed #333; color: #666; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 800; transition: 0.3s; margin-top: 10px; }
+        .add-photo-btn:hover { border-color: #0ea5e9; color: #0ea5e9; }
+
+        .stok-item { background: #161616; padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #222; }
+        .stok-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .stok-info { display: flex; align-items: center; gap: 10px; }
+        .stok-info img { width: 60px; height: 35px; object-fit: cover; border-radius: 4px; }
+        .stok-text { font-size: 11px; font-weight: 600; }
+        
+        .stok-actions { display: flex; gap: 8px; align-items: center; border-top: 1px solid #222; padding-top: 10px; }
+        .status-select { flex: 1; padding: 6px; font-size: 10px; font-weight: 800; border-radius: 5px; background: #000; color: #fff; border: 1px solid #444; }
+
+        .pagination { display: flex; justify-content: center; gap: 10px; margin-top: 20px; align-items: center; }
+        .page-btn { background: #222; border: 1px solid #333; color: white; padding: 5px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+        .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        #main-content { display: none; }
+        #up-loader { font-size: 10px; color: #0ea5e9; font-weight: bold; display: none; margin-top: 10px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div id="main-content">
+        <div class="card">
+            <h2>📦 TAMBAH STOK AKUN</h2>
+            
+            <label>Nama Akun</label>
+            <input type="text" id="p-nama" placeholder="Contoh: Akun ML 100 Skin">
+
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;"><label>Kategori</label>
+                    <select id="p-cat">
+                        <option value="MOBILE LEGENDS">MOBILE LEGENDS</option>
+                        <option value="FREE FIRE">FREE FIRE</option>
+                        <option value="PUBG">PUBG</option>
+                        <option value="ROBLOX">ROBLOX</option>
+                        <option value="SOSMED">SOSMED</option>
+                        <option value="LAINNYA">LAINNYA</option>
+                    </select>
+                </div>
+                <div style="flex:1;"><label>Status Akun</label>
+                    <select id="p-status">
+                        <option value="Fresh">FRESH</option>
+                        <option value="Safe">SAFE</option>
+                    </select>
+                </div>
+            </div>
+
+            <label>Harga Jual</label>
+            <input type="text" id="p-harga" inputmode="numeric" placeholder="Rp 0" oninput="window.formatHarga(this)">
+
+            <label>Deskripsi Detail</label>
+            <textarea id="p-desc" placeholder="Tulis spesifikasi lengkap di sini..." style="height: 100px;"></textarea>
+
+            <label>Thumbnail Utama (Wajib Potong)</label>
+            <input type="file" id="f-main" accept="image/*">
+            <div id="crop-area">
+                <img id="c-img" style="max-width: 100%;">
+                <button class="btn btn-blue" onclick="window.saveCrop()">POTONG & SIMPAN</button>
+            </div>
+            <img id="thumb-final" style="width:100%; border-radius:8px; margin-top:10px; display:none; border:1px solid #0ea5e9;">
+
+            <label>Foto Detail Spek (Tanpa Crop)</label>
+            <div id="detail-grid" class="preview-grid"></div>
+            
+            <input type="file" id="f-single" accept="image/*" style="display: none;" onchange="window.uploadDetailOneByOne(this)">
+            <div class="add-photo-btn" onclick="document.getElementById('f-single').click()">
+                ➕ TAMBAH FOTO DETAIL (1 PER 1)
+            </div>
+            
+            <div id="up-loader">PROSES UPLOAD KE CLOUD...</div>
+
+            <button class="btn btn-green" onclick="window.publishStok()">POST KE KATALOG</button>
+        </div>
+
+        <div class="card">
+            <h2>🗑️ KELOLA STOK (10/HAL)</h2>
+            <div id="stok-list"></div>
+            <div class="pagination">
+                <button id="prev-btn" class="page-btn" onclick="window.changePage(-1)">PREV</button>
+                <span id="page-num" style="font-size:12px; font-weight:bold;">1</span>
+                <button id="next-btn" class="page-btn" onclick="window.changePage(1)">NEXT</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove, query, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getRemoteConfig, getValue, fetchAndActivate } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-remote-config.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgqJ0f2v88T6Ijamd5gGS-NZzJyVl0pYU",
+            authDomain: "adminhann25.firebaseapp.com",
+            projectId: "adminhann25",
+            databaseURL: "https://adminhann25-default-rtdb.asia-southeast1.firebasedatabase.app",
+            appId: "1:1020946488981:web:9b2cf0902f5665e342c59c"
+        };
+
+        const CLOUD_NAME = "dfoadghfd"; 
+        const UPLOAD_PRESET = "stok_hann25";
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const rc = getRemoteConfig(app);
+
+        let cropper = null;
+        window.finalThumbData = "";
+        window.detailImages = [];
+        window.allStokData = [];
+        let currentPage = 1;
+
+        (async () => {
+            if (sessionStorage.getItem("__hann_auth")) {
+                document.getElementById("main-content").style.display = "block";
+                loadStokData();
+                return;
+            }
+            await fetchAndActivate(rc);
+            const pass = getValue(rc, "admin_password").asString();
+            const { value: res } = await Swal.fire({
+                title: 'ADMIN ACCESS', input: 'password', background: '#111', color: '#fff',
+                allowOutsideClick: false, preConfirm: (v) => v === pass || Swal.showValidationMessage('Salah!')
+            });
+            if (res) { sessionStorage.setItem("__hann_auth", "t"); location.reload(); }
+        })();
+
+        window.formatHarga = (e) => {
+            let v = e.value.replace(/\D/g, "");
+            e.value = v ? "Rp " + parseInt(v).toLocaleString("id-ID") : "";
+        };
+
+        document.getElementById('f-main').onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const area = document.getElementById('crop-area');
+                area.style.display = 'block';
+                const img = document.getElementById('c-img');
+                img.src = ev.target.result;
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(img, {
+                    aspectRatio: 16 / 9,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    background: false,
+                    autoCropArea: 1,
+                    checkOrientation: false
+                });
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.saveCrop = () => {
+            if (!cropper) return;
+            window.finalThumbData = cropper.getCroppedCanvas({
+                width: 1280,
+                fillColor: '#000'
+            }).toDataURL('image/jpeg', 0.8);
+            
+            const prev = document.getElementById('thumb-final');
+            prev.src = window.finalThumbData;
+            prev.style.display = 'block';
+            document.getElementById('crop-area').style.display = 'none';
+            Swal.fire({ title: 'Thumbnail OK', icon: 'success', toast: true, timer: 1000, showConfirmButton: false });
+        };
+
+        window.uploadDetailOneByOne = async (input) => {
+            const file = input.files[0];
+            if (!file) return;
+
+            const loader = document.getElementById('up-loader');
+            loader.style.display = 'block';
+
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', UPLOAD_PRESET);
+
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+                const data = await res.json();
+                
+                if (data.secure_url) {
+                    window.detailImages.push(data.secure_url);
+                    renderDetailGrid();
+                }
+            } catch (err) { 
+                console.error(err);
+                Swal.fire('Gagal', 'Gagal upload ke Cloudinary', 'error');
+            } finally {
+                loader.style.display = 'none';
+                input.value = ""; 
+            }
+        };
+
+        function renderDetailGrid() {
+            const grid = document.getElementById('detail-grid');
+            grid.innerHTML = "";
+            window.detailImages.forEach((url, i) => {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                div.innerHTML = `
+                    <img src="${url}">
+                    <button class="del-img" onclick="window.removeDetail(${i})">HAPUS</button>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        window.removeDetail = (i) => {
+            window.detailImages.splice(i, 1);
+            renderDetailGrid();
+        };
+
+        window.publishStok = async () => {
+            const n = document.getElementById('p-nama').value;
+            const h = document.getElementById('p-harga').value.replace(/\D/g, "");
+            if (!n || !h || !window.finalThumbData) return Swal.fire('Lengkapi Data!', 'Judul, Harga, & Thumbnail Wajib.', 'warning');
+
+            Swal.fire({ title: 'Menyimpan Data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            try {
+                await push(ref(db, 'stok_akun'), {
+                    nama: n, harga: parseInt(h), deskripsi: document.getElementById('p-desc').value,
+                    kategori: document.getElementById('p-cat').value, status_akun: document.getElementById('p-status').value,
+                    status_stok: "READY",
+                    foto: window.finalThumbData, fotos: window.detailImages, ts: Date.now()
+                });
+                
+                Swal.fire({ icon: 'success', title: 'STOK BERHASIL DIUPLOAD!' }).then(() => location.reload());
+                
+            } catch (err) {
+                Swal.fire('Gagal!', 'Error database.', 'error');
+            }
+        };
+
+        function loadStokData() {
+            onValue(query(ref(db, 'stok_akun')), (snap) => {
+                window.allStokData = [];
+                snap.forEach(child => {
+                    window.allStokData.unshift({ id: child.key, ...child.val() });
+                });
+                displayStok();
+            });
+        }
+
+        function displayStok() {
+            const container = document.getElementById('stok-list');
+            container.innerHTML = "";
+            const start = (currentPage - 1) * 10;
+            const paginated = window.allStokData.slice(start, start + 10);
+
+            paginated.forEach(item => {
+                const d = document.createElement('div');
+                d.className = 'stok-item';
+                const currentStok = item.status_stok || "READY";
+                
+                d.innerHTML = `
+                    <div class="stok-top">
+                        <div class="stok-info">
+                            <img src="${item.foto}">
+                            <div class="stok-text">${item.nama}<br><span style="color:#0ea5e9">Rp ${item.harga.toLocaleString('id-ID')}</span></div>
+                        </div>
+                        <button class="btn btn-red" onclick="window.delStok('${item.id}')">HAPUS</button>
+                    </div>
+                    <div class="stok-actions">
+                        <span style="font-size:9px; font-weight:800; color:#666;">EDIT STATUS:</span>
+                        <select class="status-select" onchange="window.updateStatus('${item.id}', this.value)" style="color: ${currentStok === 'SOLD' ? '#e74c3c' : '#2ecc71'}">
+                            <option value="READY" ${currentStok === 'READY' ? 'selected' : ''}>READY</option>
+                            <option value="SOLD" ${currentStok === 'SOLD' ? 'selected' : ''}>SOLD OUT</option>
+                        </select>
+                    </div>
+                `;
+                container.appendChild(d);
+            });
+
+            document.getElementById('page-num').innerText = currentPage;
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = start + 10 >= window.allStokData.length;
+        }
+
+        window.updateStatus = async (id, val) => {
+            try {
+                await update(ref(db, `stok_akun/${id}`), { status_stok: val });
+                Swal.fire({ title: 'Status Diupdate!', icon: 'success', toast: true, timer: 1500, showConfirmButton: false, position: 'top' });
+            } catch (err) {
+                Swal.fire('Gagal', 'Gagal update status', 'error');
+            }
+        };
+
+        window.changePage = (dir) => {
+            currentPage += dir;
+            displayStok();
+        };
+
+        window.delStok = (id) => {
+            Swal.fire({ title: 'Hapus Stok?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e74c3c' }).then(r => {
+                if (r.isConfirmed) remove(ref(db, `stok_akun/${id}`));
+            });
+        };
+    </script>
+</body>
+</html>
